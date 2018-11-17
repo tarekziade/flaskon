@@ -1,3 +1,4 @@
 flask
 konfig
-swagger_parser
+openapi-spec-validator
+prance

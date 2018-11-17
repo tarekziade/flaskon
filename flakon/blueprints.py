@@ -1,6 +1,6 @@
 from flask import jsonify, Blueprint
 from werkzeug.exceptions import default_exceptions
-from swagger_parser import SwaggerParser
+from prance import ResolvingParser
 from flakon.util import get_content, error_handling
 
 
@@ -48,7 +48,7 @@ class SwaggerBlueprint(JsonBlueprint):
              template_folder, url_prefix, subdomain,
              url_defaults, root_path)
         self._content = get_content(swagger_spec)
-        self._parser = SwaggerParser(swagger_dict=self._content)
+        self._parser = ResolvingParser(swagger_spec, backend='openapi-spec-validator')
         self.spec = self._parser.specification
         self.ops = self._get_operations()
 

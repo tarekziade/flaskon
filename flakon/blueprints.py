@@ -22,10 +22,12 @@ class JsonBlueprint(Blueprint):
         self.app = app
 
     def add_url_rule(self, rule, endpoint=None, view_func=None, **options):
+        print(rule,endpoint,view_func)
         if view_func is not None:
             def _json(f):
                 def __json(*args, **kw):
                     res = f(*args, **kw)
+                    print(res)
                     if isinstance(res, dict):
                         with self.app.app_context():
                             res = jsonify(res)

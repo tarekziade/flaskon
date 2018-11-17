@@ -70,7 +70,6 @@ class SwaggerBlueprint(JsonBlueprint):
             # XXX use regex
             path = op['path'].replace('{', '<')
             path = path.replace('}', '>')
-            print(path)
             self.add_url_rule(path, endpoint, f,
                               methods=[op['method']], **options)
             return f

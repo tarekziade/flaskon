@@ -56,9 +56,10 @@ class SwaggerBlueprint(JsonBlueprint):
         ops = {}
         for path, spec in self.spec['paths'].items():
             for method, options in spec.items():
-                options['method'] = method.upper()
-                options['path'] = path
-                ops[options['operationId']] = options
+                if method != "parameters":
+                    options['method'] = method.upper()
+                    options['path'] = path
+                    ops[options['operationId']] = options
         return ops
 
     def operation(self, operation_id, **options):

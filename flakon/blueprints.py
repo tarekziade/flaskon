@@ -26,7 +26,6 @@ class JsonBlueprint(Blueprint):
             def _json(f):
                 def __json(*args, **kw):
                     res = f(*args, **kw)
-                    print(res)
                     if isinstance(res, dict):
                         with self.app.app_context():
                             res = jsonify(res)

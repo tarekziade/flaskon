@@ -26,6 +26,7 @@ class JsonBlueprint(Blueprint):
             def _json(f):
                 def __json(*args, **kw):
                     res = f(*args, **kw)
+                    print(res)
                     if isinstance(res, dict):
                         with self.app.app_context():
                             res = jsonify(res)
@@ -56,6 +57,8 @@ class SwaggerBlueprint(JsonBlueprint):
         ops = {}
         for path, spec in self.spec['paths'].items():
             for method, options in spec.items():
+                if method not in ['post', 'get', 'put', 'delete', 'patch']:
+                    continue
                 options['method'] = method.upper()
                 options['path'] = path
                 ops[options['operationId']] = options
@@ -70,6 +73,7 @@ class SwaggerBlueprint(JsonBlueprint):
             # XXX use regex
             path = op['path'].replace('{', '<')
             path = path.replace('}', '>')
+
             self.add_url_rule(path, endpoint, f,
                               methods=[op['method']], **options)
             return f

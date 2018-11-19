@@ -2,3 +2,4 @@ flask
 konfig
 openapi-spec-validator
 prance
+jsonschema

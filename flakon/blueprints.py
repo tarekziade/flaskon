@@ -169,6 +169,7 @@ class SwaggerBlueprint(JsonBlueprint):
     def check_return(res, op):
         if 'responses' in op:
             op = op['responses']
+            print(res)
             if type(res) == tuple:
                 if str(res[1]) not in op:
                     print('Error: return type {0} not supported in the API specification'.format(res[1]))
@@ -181,10 +182,45 @@ class SwaggerBlueprint(JsonBlueprint):
                             if 'schema' in op:
                                 op = op['schema']
                                 try:
-                                    validate(json.loads(res[0].data.decode('ascii')), op)
+                                    if type(res[0]) == str:
+                                        validate(json.loads(res[0]), op)
+                                    else:
+                                        validate(json.loads(res[0].data.decode('ascii')), op)
                                 except ValidationError as e:
                                     print(e)
+                                except ValueError as e:
+                                    r = res[0] if type(res[0]) == str else res[0].data.decode('ascii')
+                                    print('Error for response code 200, API is expecting a JSON but you are sending '
+                                          '"{0}" '
+                                          .format(r))
                     else:
                         if res[0] != "":
                             print('Error response with code {0} supposed to not have any content but got {1}'.format(
                                 res[1], res[0]))
+            else:
+                if '200' not in op:
+                    print('Error: return type {0} not supported in the API specification'.format('200'))
+                else:
+                    op = op['200']
+                    if 'content' in op:
+                        op = op['content']
+                        if 'application/json' in op:
+                            op = op['application/json']
+                            if 'schema' in op:
+                                op = op['schema']
+                                try:
+                                    if type(res) == str:
+                                        validate(json.loads(res), op)
+                                    else:
+                                        validate(json.loads(res.data.decode('ascii')), op)
+                                except ValidationError as e:
+                                    print(e)
+                                except ValueError as e:
+                                    r = res if type(res) == str else res.data.decode('ascii')
+                                    print('Error for response code 200, API is expecting a JSON but you are sending '
+                                          '"{0}" '
+                                          .format(r))
+                    else:
+                        if res[0] != "":
+                            print('Error response with code {0} supposed to not have any content but got {1}'.format(
+                                res[1], '200'))

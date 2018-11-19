@@ -1,4 +1,4 @@
-from flask import jsonify, Blueprint
+from flask import jsonify, Blueprint, request
 from werkzeug.exceptions import default_exceptions
 from prance import ResolvingParser
 from flakon.util import get_content, error_handling
@@ -30,6 +30,7 @@ class JsonBlueprint(Blueprint):
                         with self.app.app_context():
                             res = jsonify(res)
                     return res
+
                 return __json
 
             view_func = _json(view_func)
@@ -74,6 +75,29 @@ class SwaggerBlueprint(JsonBlueprint):
             path = path.replace('}', '>')
 
             self.add_url_rule(path, endpoint, f,
-                              methods=[op['method']], **options)
+                              methods=[op['method']], operation_id=operation_id, **options)
             return f
+
         return decorator
+
+    def add_url_rule(self, rule, endpoint=None, view_func=None, **options):
+        if view_func is not None:
+            def _json(f):
+                def __json(*args, **kw):
+                    for count, thing in enumerate(args):
+                        print('{0}. {1}'.format(count, thing))
+                    for name, item in kw.items():
+                        print('{0} = {1}'.format(name, item))
+                    res = f(*args, **kw)
+                    if isinstance(res, dict):
+                        with self.app.app_context():
+                            res = jsonify(res)
+                    op = self.ops[options['operation_id']]
+
+                    return res
+
+                return __json
+
+            view_func = _json(view_func)
+        return super(SwaggerBlueprint, self).add_url_rule(rule, endpoint,
+                                                          view_func, **options)

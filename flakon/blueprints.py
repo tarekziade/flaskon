@@ -3,6 +3,7 @@ from werkzeug.exceptions import default_exceptions
 from prance import ResolvingParser
 from flakon.util import get_content, error_handling
 from jsonschema import validate, ValidationError
+from datetime import datetime
 
 
 class JsonBlueprint(Blueprint):
@@ -49,6 +50,76 @@ class ArgumentError(BaseException):
         self.value = value
 
 
+def check_type(name, typee, formatt, value, minn=None, escl_min=False, maxx=None, escl_max=False, mul=None):
+    if typee == 'number':
+        value = float(value)
+        if minn is not None:
+            if escl_min:
+                if value <= minn:
+                    raise ArgumentError(name, "Error: for argument '{0}' with value '{1}' doesn't respect the "
+                                              "exclusive minimum boundary of '{2}'".format(name, value, minn))
+            else:
+                if value < minn:
+                    raise ArgumentError(name,
+                                        "Error: for argument '{0}' with value '{1}' doesn't respect the minimum "
+                                        "boundary of '{2}'".format(name, value, minn))
+        if maxx is not None:
+            if escl_max:
+                if value >= maxx:
+                    raise ArgumentError(name, "Error: for argument '{0}' with value '{1}' doesn't respect the "
+                                              "exclusive maximum boundary of '{2}'".format(name, value, maxx))
+            else:
+                if value > maxx:
+                    raise ArgumentError(name, "Error: for argument '{0}' with value '{1}' doesn't respect the "
+                                              "maximum boundary of '{2}'".format(name, value, maxx))
+        if mul is not None:
+            if value % mul != 0:
+                raise ArgumentError(name, "Error: for argument '{0}' with value '{1}' doesn't respect the"
+                                          " multiple of boundary of '{2}'".format(name, value, mul))
+    elif typee == 'integer':
+        value = int(value)
+        if minn is not None:
+            if escl_min:
+                if value <= minn:
+                    raise ArgumentError(name, "Error: for argument '{0}' with value '{1}' doesn't respect the "
+                                              "exclusive minimum boundary of '{2}'".format(name, value, minn))
+            else:
+                if value < minn:
+                    raise ArgumentError(name,
+                                        "Error: for argument '{0}' with value '{1}' doesn't respect the minimum "
+                                        "boundary of '{2}'".format(name, value, minn))
+        if maxx is not None:
+            if escl_max:
+                if value >= maxx:
+                    raise ArgumentError(name, "Error: for argument '{0}' with value '{1}' doesn't respect the "
+                                              "exclusive maximum boundary of '{2}'".format(name, value, maxx))
+            else:
+                if value > maxx:
+                    raise ArgumentError(name, "Error: for argument '{0}' with value '{1}' doesn't respect the "
+                                              "maximum boundary of '{2}'".format(name, value, maxx))
+        if mul is not None:
+            if value % mul != 0:
+                raise ArgumentError(name, "Error: for argument '{0}' with value '{1}' doesn't respect the"
+                                          " multiple of boundary of '{2}'".format(name, value, mul))
+    elif typee == 'string':
+        value = str(value)
+        if minn is not None:
+            if len(value) < minn:
+                raise ArgumentError(name, "Error: for argument '{0}' with value '{1}' doesn't respect"
+                                          " the minimum length boundary of '{2}'".format(name, value, minn))
+        if maxx is not None:
+            if len(value) > maxx:
+                raise ArgumentError(name, "Error: for argument '{0}' with value '{1}' doesn't respect"
+                                          " the maximum length boundary of '{2}'".format(name, value, maxx))
+        if formatt is not None:
+            if formatt == 'date':
+                value = datetime.strptime(value, '%Y-%m-%d')
+            elif formatt == 'date-time':
+                value = datetime.strptime(value, '%Y-%m-%dT%H:%M:%SZ')
+    elif typee == 'boolean':
+        value = bool(value)
+
+
 class SwaggerBlueprint(JsonBlueprint):
     def __init__(self, name, import_name, swagger_spec,
                  static_folder=None,
@@ -85,7 +156,6 @@ class SwaggerBlueprint(JsonBlueprint):
             path = op['path'].replace('{', '<')
             path = path.replace('}', '>')
 
-            print(options)
             self.add_url_rule(path, endpoint, f,
                               methods=[op['method']], operation_id=operation_id, **options)
             return f
@@ -129,26 +199,56 @@ class SwaggerBlueprint(JsonBlueprint):
 
     @staticmethod
     def check_args(args, op):
-        list = []
+        listt = []
         if 'parameters' in op:
             op = op['parameters']
             for par in op:
                 if par['in'] == 'query':
                     name = par['name']
-                    list.append(name)
+                    listt.append(name)
                     schema = par['schema']
-                    type = schema['type']
-                    format = None
+                    typee = schema['type']
+                    formatt = None
+                    minn = None
+                    maxx = None
+                    escl_min = False
+                    escl_max = False
+                    multiple_of = None
                     if 'format' in schema:
-                        format = schema['format']
+                        formatt = schema['format']
+                    if 'minimum' in schema:
+                        minn = schema['minimum']
+                    if 'minLength' in schema:
+                        minn = schema['minLength']
+                    if 'maximum' in schema:
+                        maxx = schema['maximum']
+                    if 'maxLength' in schema:
+                        maxx = schema['maxLength']
+                    if 'exclusiveMinimum' in schema:
+                        escl_min = schema['exclusiveMinimum']
+                    if 'exclusiveMaximum' in schema:
+                        escl_max = schema['exclusiveMaximum']
+                    if 'multipleOf' in schema:
+                        multiple_of = schema['multipleOf']
                     if 'required' in par and par['required']:
                         if name not in args:
                             raise ArgumentError(name, 'Error: required parameter {0} not present in query'.format(name))
-                    # TODO continue this validator...
-                    # value = args[name]
-
+                    if name in args:
+                        value = args[name]
+                        try:
+                            check_type(name, typee, formatt, value, minn, escl_min, maxx, escl_max, multiple_of)
+                        except ValueError as e:
+                            if formatt is None:
+                                raise ArgumentError(name, "Error: parameter '{0}' with value '{1}' is not"
+                                                          " of the expected type '{2}'".format(name, value, typee))
+                            else:
+                                raise ArgumentError(name, "Error: parameter '{0}' with value '{1}' is not of"
+                                                          " the expected type '{2}' with format '{3}'".format(name,
+                                                                                                              value,
+                                                                                                              typee,
+                                                                                                              formatt))
             for arg in args:
-                if arg not in list:
+                if arg not in listt:
                     raise ArgumentError(arg, 'Error: received "{0}" as query argument but is not declared in the API'
                                         .format(arg))
 
@@ -167,60 +267,39 @@ class SwaggerBlueprint(JsonBlueprint):
 
     @staticmethod
     def check_return(res, op):
+        code = '200'
+        if type(res) == tuple:
+            if type(res[0]) == str:
+                response = res[0]
+            else:
+                response = res[0].data.decode('ascii')
+            code = str(res[1])
+        else:
+            if type(res) == str:
+                response = res
+            else:
+                response = res.data.decode('ascii')
         if 'responses' in op:
             op = op['responses']
-            print(res)
-            if type(res) == tuple:
-                if str(res[1]) not in op:
-                    print('Error: return type {0} not supported in the API specification'.format(res[1]))
-                else:
-                    op = op[str(res[1])]
-                    if 'content' in op:
-                        op = op['content']
-                        if 'application/json' in op:
-                            op = op['application/json']
-                            if 'schema' in op:
-                                op = op['schema']
-                                try:
-                                    if type(res[0]) == str:
-                                        validate(json.loads(res[0]), op)
-                                    else:
-                                        validate(json.loads(res[0].data.decode('ascii')), op)
-                                except ValidationError as e:
-                                    print(e)
-                                except ValueError as e:
-                                    r = res[0] if type(res[0]) == str else res[0].data.decode('ascii')
-                                    print('Error for response code 200, API is expecting a JSON but you are sending '
-                                          '"{0}" '
-                                          .format(r))
-                    else:
-                        if res[0] != "":
-                            print('Error response with code {0} supposed to not have any content but got {1}'.format(
-                                res[1], res[0]))
+            if code not in op:
+                print('Error: return type {0} not supported in the API specification'.format(code))
             else:
-                if '200' not in op:
-                    print('Error: return type {0} not supported in the API specification'.format('200'))
+                op = op[code]
+                if 'content' in op:
+                    op = op['content']
+                    if 'application/json' in op:
+                        op = op['application/json']
+                        if 'schema' in op:
+                            op = op['schema']
+                            try:
+                                validate(json.loads(response), op)
+                            except ValidationError as e:
+                                print(e)
+                            except ValueError as e:
+                                print('Error for response code {0}, API is expecting a JSON but you are sending '
+                                      '"{1}" '
+                                      .format(code, response))
                 else:
-                    op = op['200']
-                    if 'content' in op:
-                        op = op['content']
-                        if 'application/json' in op:
-                            op = op['application/json']
-                            if 'schema' in op:
-                                op = op['schema']
-                                try:
-                                    if type(res) == str:
-                                        validate(json.loads(res), op)
-                                    else:
-                                        validate(json.loads(res.data.decode('ascii')), op)
-                                except ValidationError as e:
-                                    print(e)
-                                except ValueError as e:
-                                    r = res if type(res) == str else res.data.decode('ascii')
-                                    print('Error for response code 200, API is expecting a JSON but you are sending '
-                                          '"{0}" '
-                                          .format(r))
-                    else:
-                        if res[0] != "":
-                            print('Error response with code {0} supposed to not have any content but got {1}'.format(
-                                res[1], '200'))
+                    if response != "":
+                        print('Error response with code {0} supposed to not have any content but got {1}'.format(
+                            code, response))

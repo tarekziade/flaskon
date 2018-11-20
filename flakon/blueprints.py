@@ -138,9 +138,18 @@ class SwaggerBlueprint(JsonBlueprint):
     def _get_operations(self):
         ops = {}
         for path, spec in self.spec['paths'].items():
+            globalpar = None
             for method, options in spec.items():
-                if method not in ['post', 'get', 'put', 'delete', 'patch']:
+                if method == 'parameters':
+                    print(options)
+                    globalpar = options
                     continue
+                if globalpar is not None:
+                    print(options)
+                    if 'parameters' not in options:
+                        options['parameters'] = []
+                    for par in globalpar:
+                        options['parameters'].append(par)
                 options['method'] = method.upper()
                 options['path'] = path
                 ops[options['operationId']] = options
@@ -172,6 +181,7 @@ class SwaggerBlueprint(JsonBlueprint):
                     op = self.ops[operation_id]
                     # print(op)
                     try:
+                        self.check_path(request.path, op)
                         self.check_args(request.args, op)
                         if request_schema is not None:
                             validate(request.json, request_schema)
@@ -247,10 +257,10 @@ class SwaggerBlueprint(JsonBlueprint):
                                                                                                               value,
                                                                                                               typee,
                                                                                                               formatt))
-            for arg in args:
-                if arg not in listt:
-                    raise ArgumentError(arg, 'Error: received "{0}" as query argument but is not declared in the API'
-                                        .format(arg))
+        for arg in args:
+            if arg not in listt:
+                raise ArgumentError(arg, "Error: received '{0}' as query argument but is not declared in the API"
+                                    .format(arg))
 
     @staticmethod
     def get_request_schema(op):
@@ -303,3 +313,52 @@ class SwaggerBlueprint(JsonBlueprint):
                     if response != "":
                         print('Error response with code {0} supposed to not have any content but got {1}'.format(
                             code, response))
+
+    @staticmethod
+    def check_path(path, op):
+        print(path)
+        print(op)
+        test_path = op['path']
+        test_path = test_path.replace('{', '')
+        test_path = test_path.replace('}', '')
+        pathslice = path.split('/')
+        test_pathslice = test_path.split('/')
+        op = op['parameters']
+        for par in op:
+            if par['in'] == 'path':
+                name = par['name']
+                schema = par['schema']
+                typee = schema['type']
+                minn = None
+                maxx = None
+                escl_min = False
+                escl_max = False
+                multiple_of = None
+                if 'format' in schema:
+                    formatt = schema['format']
+                if 'minimum' in schema:
+                    minn = schema['minimum']
+                if 'minLength' in schema:
+                    minn = schema['minLength']
+                if 'maximum' in schema:
+                    maxx = schema['maximum']
+                if 'maxLength' in schema:
+                    maxx = schema['maxLength']
+                if 'exclusiveMinimum' in schema:
+                    escl_min = schema['exclusiveMinimum']
+                if 'exclusiveMaximum' in schema:
+                    escl_max = schema['exclusiveMaximum']
+                if 'multipleOf' in schema:
+                    multiple_of = schema['multipleOf']
+                formatt = None
+                if 'format' in schema:
+                    formatt = schema['format']
+                print(pathslice)
+                print(test_pathslice)
+                for i in range(len(test_pathslice)):
+                    if test_pathslice[i] == name:
+                        try:
+                            check_type(name, typee, formatt, pathslice[i], minn, escl_min, maxx, escl_max, multiple_of)
+                        except ValueError as e:
+                            raise ArgumentError(name, "Error: parameter '{0}' with value '{1}' in path is not of"
+                                                      " expected type '{2}'".format(name, pathslice[i], typee))

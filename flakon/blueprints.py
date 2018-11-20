@@ -334,8 +334,7 @@ class SwaggerBlueprint(JsonBlueprint):
                 escl_min = False
                 escl_max = False
                 multiple_of = None
-                if 'format' in schema:
-                    formatt = schema['format']
+                formatt = None
                 if 'minimum' in schema:
                     minn = schema['minimum']
                 if 'minLength' in schema:
@@ -350,7 +349,6 @@ class SwaggerBlueprint(JsonBlueprint):
                     escl_max = schema['exclusiveMaximum']
                 if 'multipleOf' in schema:
                     multiple_of = schema['multipleOf']
-                formatt = None
                 if 'format' in schema:
                     formatt = schema['format']
                 print(pathslice)

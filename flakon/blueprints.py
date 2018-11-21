@@ -141,11 +141,9 @@ class SwaggerBlueprint(JsonBlueprint):
             globalpar = None
             for method, options in spec.items():
                 if method == 'parameters':
-                    print(options)
                     globalpar = options
                     continue
                 if globalpar is not None:
-                    print(options)
                     if 'parameters' not in options:
                         options['parameters'] = []
                     for par in globalpar:
@@ -183,6 +181,7 @@ class SwaggerBlueprint(JsonBlueprint):
                     try:
                         self.check_path(request.path, op)
                         self.check_args(request.args, op)
+                        self.check_header(request.headers, op)
                         if request_schema is not None:
                             validate(request.json, request_schema)
                         res = f(*args, **kw)
@@ -316,47 +315,101 @@ class SwaggerBlueprint(JsonBlueprint):
 
     @staticmethod
     def check_path(path, op):
-        print(path)
-        print(op)
         test_path = op['path']
         test_path = test_path.replace('{', '')
         test_path = test_path.replace('}', '')
         pathslice = path.split('/')
         test_pathslice = test_path.split('/')
-        op = op['parameters']
-        for par in op:
-            if par['in'] == 'path':
-                name = par['name']
-                schema = par['schema']
-                typee = schema['type']
-                minn = None
-                maxx = None
-                escl_min = False
-                escl_max = False
-                multiple_of = None
-                formatt = None
-                if 'minimum' in schema:
-                    minn = schema['minimum']
-                if 'minLength' in schema:
-                    minn = schema['minLength']
-                if 'maximum' in schema:
-                    maxx = schema['maximum']
-                if 'maxLength' in schema:
-                    maxx = schema['maxLength']
-                if 'exclusiveMinimum' in schema:
-                    escl_min = schema['exclusiveMinimum']
-                if 'exclusiveMaximum' in schema:
-                    escl_max = schema['exclusiveMaximum']
-                if 'multipleOf' in schema:
-                    multiple_of = schema['multipleOf']
-                if 'format' in schema:
-                    formatt = schema['format']
-                print(pathslice)
-                print(test_pathslice)
-                for i in range(len(test_pathslice)):
-                    if test_pathslice[i] == name:
+        if 'parameters' in op:
+            op = op['parameters']
+            for par in op:
+                if par['in'] == 'path':
+                    name = par['name']
+                    schema = par['schema']
+                    typee = schema['type']
+                    minn = None
+                    maxx = None
+                    escl_min = False
+                    escl_max = False
+                    multiple_of = None
+                    formatt = None
+                    if 'minimum' in schema:
+                        minn = schema['minimum']
+                    if 'minLength' in schema:
+                        minn = schema['minLength']
+                    if 'maximum' in schema:
+                        maxx = schema['maximum']
+                    if 'maxLength' in schema:
+                        maxx = schema['maxLength']
+                    if 'exclusiveMinimum' in schema:
+                        escl_min = schema['exclusiveMinimum']
+                    if 'exclusiveMaximum' in schema:
+                        escl_max = schema['exclusiveMaximum']
+                    if 'multipleOf' in schema:
+                        multiple_of = schema['multipleOf']
+                    if 'format' in schema:
+                        formatt = schema['format']
+                    for i in range(len(test_pathslice)):
+                        if test_pathslice[i] == name:
+                            try:
+                                check_type(name, typee, formatt, pathslice[i], minn, escl_min, maxx, escl_max,
+                                           multiple_of)
+                            except ValueError as e:
+                                raise ArgumentError(name, "Error: parameter '{0}' with value '{1}' in path is not of"
+                                                          " expected type '{2}'".format(name, pathslice[i], typee))
+
+    @staticmethod
+    def check_header(headers, op):
+        print(headers)
+        print(op)
+        listt = []
+        nice_heders = {}
+        for header in headers:
+            nice_heders[header[0]] = header[1:]
+        if 'parameters' in op:
+            op = op['parameters']
+            for par in op:
+                if par['in'] == 'header':
+                    name = par['name']
+                    listt.append(name)
+                    schema = par['schema']
+                    typee = schema['type']
+                    formatt = None
+                    minn = None
+                    maxx = None
+                    escl_min = False
+                    escl_max = False
+                    multiple_of = None
+                    if 'format' in schema:
+                        formatt = schema['format']
+                    if 'minimum' in schema:
+                        minn = schema['minimum']
+                    if 'minLength' in schema:
+                        minn = schema['minLength']
+                    if 'maximum' in schema:
+                        maxx = schema['maximum']
+                    if 'maxLength' in schema:
+                        maxx = schema['maxLength']
+                    if 'exclusiveMinimum' in schema:
+                        escl_min = schema['exclusiveMinimum']
+                    if 'exclusiveMaximum' in schema:
+                        escl_max = schema['exclusiveMaximum']
+                    if 'multipleOf' in schema:
+                        multiple_of = schema['multipleOf']
+                    if 'required' in par and par['required']:
+                        if name not in nice_heders:
+                            raise ArgumentError(name, 'Error: required header "{0}" not present in header'.format(name))
+                    if name in nice_heders:
+                        value = nice_heders[name]
                         try:
-                            check_type(name, typee, formatt, pathslice[i], minn, escl_min, maxx, escl_max, multiple_of)
+                            check_type(name, typee, formatt, value, minn, escl_min, maxx, escl_max, multiple_of)
                         except ValueError as e:
-                            raise ArgumentError(name, "Error: parameter '{0}' with value '{1}' in path is not of"
-                                                      " expected type '{2}'".format(name, pathslice[i], typee))
+                            if formatt is None:
+                                raise ArgumentError(name, "Error: header '{0}' with value '{1}' is not"
+                                                          " of the expected type '{2}'".format(name, value, typee))
+                            else:
+                                raise ArgumentError(name, "Error: header '{0}' with value '{1}' is not of"
+                                                          " the expected type '{2}' with format '{3}'".format(name,
+                                                                                                              value,
+                                                                                                              typee,
+                                                                                                              formatt))

@@ -4,17 +4,47 @@ import json
 import urllib.request
 from functools import update_wrapper
 from datetime import timedelta
+import requests
+import time
 
 import yaml
 from werkzeug.exceptions import HTTPException
 from flask import jsonify, abort, current_app, request, make_response
-
 
 _JSON_TYPES = ('application/vnd.api+json', 'application/json')
 _YAML_TYPES = ('application/x-yaml', 'text/yaml')
 
 if '.yaml' not in mimetypes.types_map:
     mimetypes.types_map['.yaml'] = 'application/x-yaml'
+
+
+def retry_operation(url, method='GET', request_body=None):
+    res = None
+    t = 1
+    while res is not None:
+        res = send_request(url, method, request_body)
+        if res is None:
+            print('Request with method {0} to {1} with requestBOdy {2} TimedOut retrying in '
+                  '{3}s...'.format(method, url, request_body, t))
+            time.sleep(t)
+            t = t * 2
+    return res
+
+
+def send_request(url, method='GET', request_body=None):
+    print('Sending a {0} request to {1} with requestBOdy {2}'.format(method, url, request_body))
+    try:
+        if method == 'GET':
+            res = requests.get(url)
+        if method == 'POST':
+            res = requests.post(url, json=request_body)
+        if method == 'DELETE':
+            res = requests.delete(url)
+        if method == 'PUT':
+            res = requests.put(url, data=jsonify(request_body), headers={'Content-Type': 'application/json'})
+        return res
+    except TimeoutError:
+        return None
 
 
 def _decoder(mime):
@@ -92,4 +122,5 @@ def crossdomain(origin=None, methods=None, headers=None,
 
         f.provide_automatic_options = False
         return update_wrapper(wrapped_function, f)
+
     return decorator

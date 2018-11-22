@@ -360,8 +360,6 @@ class SwaggerBlueprint(JsonBlueprint):
 
     @staticmethod
     def check_header(headers, op):
-        print(headers)
-        print(op)
         listt = []
         nice_heders = {}
         for header in headers:

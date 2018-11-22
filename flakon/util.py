@@ -6,6 +6,7 @@ from functools import update_wrapper
 from datetime import timedelta
 import requests
 import time
+import functools
 
 import yaml
 from werkzeug.exceptions import HTTPException
@@ -18,17 +19,31 @@ if '.yaml' not in mimetypes.types_map:
     mimetypes.types_map['.yaml'] = 'application/x-yaml'
 
 
-def retry_operation(url, method='GET', request_body=None):
-    res = None
-    t = 1
-    while res is not None:
-        res = send_request(url, method, request_body)
-        if res is None:
-            print('Request with method {0} to {1} with requestBOdy {2} TimedOut retrying in '
-                  '{3}s...'.format(method, url, request_body, t))
+def retry_request(func, retries=6):
+    @functools.wraps(func)
+    def _retry_request(*args, **kw):
+        count = 0
+        t = 1
+        res = None
+        while res is None and count < retries - 1:
+            count += 1
+            try:
+                res = func(*args, **kw)
+            except Exception as e:
+                pass
+
             time.sleep(t)
-            t = t * 2
-    return res
+            t *= 2
+
+        if count == retries - 1:
+            res = func(*args, **kw)
+        return res
+
+    return _retry_request
+
+
+def send_request_with_retry(url, method='GET', request_body=None, retries=6):
+    return retry_request(send_request(url, method, request_body), retries)
 
 
 def send_request(url, method='GET', request_body=None):
@@ -41,7 +56,8 @@ def send_request(url, method='GET', request_body=None):
         if method == 'DELETE':
             res = requests.delete(url)
         if method == 'PUT':
-            res = requests.put(url, data=jsonify(request_body), headers={'Content-Type': 'application/json'})
+            res = requests.put(url, data=json.dumps(request_body), headers={'Content-Type': 'application/json'})
+            print(res)
         return res
     except TimeoutError:
         return None

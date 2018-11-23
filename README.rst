@@ -47,16 +47,28 @@ Example of usage::
     
 Now exists functions for get, post, put and delete operations also with retry::
 
-    from flakon.request_util import users_endpoint, get_request, runs_endpoint, put_request_retry
+    from flakon.request_utils import users_endpoint, get_request, runs_endpoint, put_request_retry
+    import requests
     ...
     user_id = 1
-    # this is a GET to http://127.0.0.1:5002/users/1/runs
-    res = get_request(runs_endpoint(user_id))
+    try:
+        # this is a GET to http://127.0.0.1:5002/users/1/runs
+        res = get_request(runs_endpoint(user_id))
+    except requests.exceptions.RequestException as err:
+        print(err)
+        return abort(503) # SERVICE UNAVAILABLE
+    
     ...
     
     body = { 'id' : 1, 'age' : 20 }
     
-    # this is a PUT to http://127.0.0.1:5002/users/1 which modifies the age of the user with id 1
-    res = put_request_retry(user_endpoint(), user_id, body)
+    try:
+        # this is a PUT to http://127.0.0.1:5002/users/1 which modifies the age of the user with id 1
+        res = put_request_retry(user_endpoint(), user_id, body)
+    except requests.exceptions.RequestException as err:
+        print(err)
+        return abort(503) # SERVICE UNAVAILABLE
+        
+    
 
 

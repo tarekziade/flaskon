@@ -7,6 +7,7 @@ from datetime import timedelta
 import requests
 import time
 import functools
+from requests import RequestException
 
 import yaml
 from werkzeug.exceptions import HTTPException
@@ -29,7 +30,7 @@ def retry_request(func, retries=6):
             count += 1
             try:
                 res = func(*args, **kw)
-            except Exception as e:
+            except RequestException as e:
                 pass
 
             time.sleep(t)
@@ -48,19 +49,16 @@ def send_request_with_retry(url, method='GET', request_body=None, retries=6):
 
 def send_request(url, method='GET', request_body=None):
     print('Sending a {0} request to {1} with requestBOdy {2}'.format(method, url, request_body))
-    try:
-        if method == 'GET':
-            res = requests.get(url)
-        if method == 'POST':
-            res = requests.post(url, json=request_body)
-        if method == 'DELETE':
-            res = requests.delete(url)
-        if method == 'PUT':
-            res = requests.put(url, data=json.dumps(request_body), headers={'Content-Type': 'application/json'})
-            print(res)
-        return res
-    except TimeoutError:
-        return None
+    if method == 'GET':
+        res = requests.get(url)
+    if method == 'POST':
+        res = requests.post(url, json=request_body)
+    if method == 'DELETE':
+        res = requests.delete(url)
+    if method == 'PUT':
+        res = requests.put(url, data=json.dumps(request_body), headers={'Content-Type': 'application/json'})
+        print(res)
+    return res
 
 
 def _decoder(mime):

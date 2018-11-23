@@ -19,6 +19,8 @@ Features so far:
 - a JsonBlueprint: like a Blueprint but everything is jsonified
 - a SwaggerBlueprint: like JsonBlueprint but you can pass a swagger spec
   and user @operation('operationId') instead of @route
+- modified operation to also make validation of the requests and responses taken the .yaml
+- modified to handle swagger version 3.0
 - uses Konfig to load an INI file for updating app.config
 
 
@@ -42,3 +44,19 @@ Example of usage::
 
 
     app = create_app(blueprints=[api, other_api])
+    
+Now exists functions for get, post, put and delete operations also with retry::
+
+    from flakon.request_util import users_endpoint, get_request, runs_endpoint, put_request_retry
+    ...
+    user_id = 1
+    # this is a GET to http://127.0.0.1:5002/users/1/runs
+    res = get_request(runs_endpoint(user_id))
+    ...
+    
+    body = { 'id' : 1, 'age' : 20 }
+    
+    # this is a PUT to http://127.0.0.1:5002/users/1 which modifies the age of the user with id 1
+    res = put_request_retry(user_endpoint(), user_id, body)
+
+

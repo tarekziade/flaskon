@@ -19,14 +19,23 @@ def add_resource(endpoint = None, resource = None):
 
 
 def users_endpoint(resource = None):
-    return add_resource(add_resource(DATA_SERVICE, USER_ENDPOINT), resource)
-
+    
+    endpoint = add_resource(DATA_SERVICE, USER_ENDPOINT)
+    endpoint = add_resource(endpoint, resource)
+    
+    return endpoint
+    
 
 def runs_endpoint(user_id, resource = None):
     if user_id is None:
         raise Exception("user_id must be specified")
 
-    return add_resource(add_resource(add_resource(DATA_SERVICE, USER_ENDPOINT), user_id), resource)
+    endpoint = add_resource(DATA_SERVICE, USER_ENDPOINT)
+    endpoint = add_resource(endpoint, user_id)
+    endpoint = add_resource(endpoint, RUNS_ENDPOINT)
+    endpoint = add_resource(endpoint, resource)
+
+    return endpoint
 
 
 def retry_request(func, retries = 6):
@@ -66,7 +75,7 @@ def delete_request(url = None, resource = None):
 
 
 def put_request(url = None, resource = None, body = {}):
-    return requests.put(url, data = jsonify(request_body), headers = {'Content-Type': 'application/json'})
+    return requests.put(url, data = json.dumps(request_body), headers = {'Content-Type': 'application/json'})
 
 
 @retry_request

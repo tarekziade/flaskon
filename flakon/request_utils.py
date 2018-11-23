@@ -21,7 +21,7 @@ def add_resource(endpoint = None, resource = None):
 
 def users_endpoint(resource = None):
     
-    endpoint = add_resource(DATA_SERVICE, USER_ENDPOINT)
+    endpoint = add_resource(DATA_SERVICE, USERS_ENDPOINT)
     endpoint = add_resource(endpoint, resource)
     
     return endpoint
@@ -31,7 +31,7 @@ def runs_endpoint(user_id, resource = None):
     if user_id is None:
         raise Exception("user_id must be specified!")
 
-    endpoint = add_resource(DATA_SERVICE, USER_ENDPOINT)
+    endpoint = add_resource(DATA_SERVICE, USERS_ENDPOINT)
     endpoint = add_resource(endpoint, user_id)
     endpoint = add_resource(endpoint, RUNS_ENDPOINT)
     endpoint = add_resource(endpoint, resource)
@@ -63,11 +63,11 @@ def retry_request(func, retries = 6):
     return _retry_request
 
 
-def get_request(url, resource = None):
+def get_request(url, resource = None, params = None):
     if url is None:
         raise Exception("url msut be specified!")
     
-    return requests.get(add_resource(url, resource))
+    return requests.get(add_resource(url, resource), params = params)
 
 
 def post_request(url, resource = None, params = None):
@@ -102,8 +102,8 @@ def put_request(url, resource = None, body = None):
 
 
 @retry_request
-def get_request_retry(url, resource = None):
-    return get_request(url, resource)
+def get_request_retry(url, resource = None, params = None):
+    return get_request(url, resource, params)
 
 
 @retry_request

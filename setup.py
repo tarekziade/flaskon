@@ -6,7 +6,7 @@ with open('requirements.txt') as f:
     deps = [dep for dep in f.read().split('\n') if dep.strip() != '']
     install_requires = deps
 
-with open('README.rst') as f:
+with open('README.md') as f:
     DESC = f.read()
 
 

@@ -4,17 +4,17 @@ import time
 import json
 import os
 
-DATA_SERVICE   = os.environ['DATASERVICE']+':5002' if 'DATASERVICE' in os.environ else "http://127.0.0.1:5002"
+DATA_SERVICE   = "http://"+os.environ['DATASERVICE']+':5002' if 'DATASERVICE' in os.environ else "http://127.0.0.1:5002"
 USERS_ENDPOINT = "users"
 RUNS_ENDPOINT  = "runs"
 
-CHALLENGES = os.environ['CHALLENGES']+':5003' if 'CHALLENGES' in os.environ else "http://127.0.0.1:5003"
+CHALLENGES = "http://"+os.environ['CHALLENGES']+':5003' if 'CHALLENGES' in os.environ else "http://127.0.0.1:5003"
 
 
-STATISTICS = os.environ['STATISTICS']+':5001' if 'STATISTICS' in os.environ else "http://127.0.0.1:5001"
+STATISTICS = "http://"+os.environ['STATISTICS']+':5001' if 'STATISTICS' in os.environ else "http://127.0.0.1:5001"
 
 
-TRAINING_OBJECTIVES = os.environ['OBJECTIVES']+':5004' if 'OBJECTIVES' in os.environ else "http://127.0.0.1:5004"
+TRAINING_OBJECTIVES = "http://"+os.environ['OBJECTIVES']+':5004' if 'OBJECTIVES' in os.environ else "http://127.0.0.1:5004"
 
 
 def add_resource(endpoint = None, resource = None):
@@ -29,7 +29,6 @@ def add_resource(endpoint = None, resource = None):
 
 
 def users_endpoint(resource = None):
-    print(DATA_SERVICE+USERS_ENDPOINT)
     endpoint = add_resource(DATA_SERVICE, USERS_ENDPOINT)
     endpoint = add_resource(endpoint, resource)
     
@@ -37,7 +36,6 @@ def users_endpoint(resource = None):
     
 
 def runs_endpoint(user_id, resource = None):
-    print(DATA_SERVICE + USERS_ENDPOINT + RUNS_ENDPOINT)
     if user_id is None:
         raise Exception("user_id must be specified!")
 

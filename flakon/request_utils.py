@@ -29,7 +29,7 @@ def add_resource(endpoint = None, resource = None):
 
 
 def users_endpoint(resource = None):
-    
+    print(DATA_SERVICE+USERS_ENDPOINT)
     endpoint = add_resource(DATA_SERVICE, USERS_ENDPOINT)
     endpoint = add_resource(endpoint, resource)
     

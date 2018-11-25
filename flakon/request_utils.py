@@ -37,6 +37,7 @@ def users_endpoint(resource = None):
     
 
 def runs_endpoint(user_id, resource = None):
+    print(DATA_SERVICE + USERS_ENDPOINT + RUNS_ENDPOINT)
     if user_id is None:
         raise Exception("user_id must be specified!")
 

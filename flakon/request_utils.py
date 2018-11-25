@@ -2,10 +2,19 @@ import requests
 import functools
 import time
 import json
+import os
 
-DATA_SERVICE   = "http://127.0.0.1:5002"
+DATA_SERVICE   = os.environ['DATASERVICE']+':5002' if 'DATASERVICE' in os.environ else "http://127.0.0.1:5002"
 USERS_ENDPOINT = "users"
 RUNS_ENDPOINT  = "runs"
+
+CHALLENGES = os.environ['CHALLENGES']+':5003' if 'CHALLENGES' in os.environ else "http://127.0.0.1:5003"
+
+
+STATISTICS = os.environ['STATISTICS']+':5001' if 'STATISTICS' in os.environ else "http://127.0.0.1:5001"
+
+
+TRAINING_OBJECTIVES = os.environ['OBJECTIVES']+':5004' if 'OBJECTIVES' in os.environ else "http://127.0.0.1:5004"
 
 
 def add_resource(endpoint = None, resource = None):

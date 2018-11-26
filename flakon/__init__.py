@@ -5,8 +5,11 @@ from .docs import doc
 from flakon.blueprints import SwaggerBlueprint, JsonBlueprint   # NOQA
 
 
-def create_app(name=__name__, blueprints=None, settings=None):
-    app = Flask(name)
+def create_app(name=__name__, blueprints=None, settings=None,
+               template_folder=None, static_folder=None):
+    app = Flask(name,
+                template_folder=template_folder,
+                static_folder=static_folder)
 
     # load configuration
     settings = os.environ.get('FLASK_SETTINGS', settings)
@@ -19,6 +22,7 @@ def create_app(name=__name__, blueprints=None, settings=None):
     if blueprints is not None:
         for bp in blueprints:
             app.register_blueprint(bp)
+            bp.app = app
     app.register_blueprint(doc)
 
     return app

@@ -20,6 +20,8 @@ if '.yaml' not in mimetypes.types_map:
     mimetypes.types_map['.yaml'] = 'application/x-yaml'
 
 
+# TODO: to be removed once all code is ported to request_utils
+
 def retry_request(func, retries=6):
     @functools.wraps(func)
     def _retry_request(*args, **kw):
@@ -43,10 +45,12 @@ def retry_request(func, retries=6):
     return _retry_request
 
 
+# TODO: to be removed once all code is ported to request_utils
 def send_request_with_retry(url, method='GET', request_body=None, retries=6):
     return retry_request(send_request(url, method, request_body), retries)
 
 
+# TODO: to be removed once all code is ported to request_utils
 def send_request(url, method='GET', request_body=None):
     print('Sending a {0} request to {1} with requestBOdy {2}'.format(method, url, request_body))
     if method == 'GET':

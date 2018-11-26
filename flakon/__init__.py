@@ -22,6 +22,7 @@ def create_app(name=__name__, blueprints=None, settings=None,
     if blueprints is not None:
         for bp in blueprints:
             app.register_blueprint(bp)
+            bp.app = app
     app.register_blueprint(doc)
 
     return app

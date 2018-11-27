@@ -122,11 +122,19 @@ paths:
         description: "The id of the user whose statistics you want to access"
         required: true
         schema:
-          type: integer
+          type: number
           minimum: 10
           maximum: 50
           multipleOf: 15.5
           exclusiveMaximum: true
+      - in: query
+        name: q
+        schema:
+          type: number
+          minimum: 10
+          maximum: 50
+          multipleOf: 15.5
+          exclusiveMaximum: True
 
     get:
       operationId: "getAllStatisticsbyUserID"

@@ -127,6 +127,14 @@ paths:
           maximum: 50
           multipleOf: 15
           exclusiveMaximum: true
+      - in: query
+        name: q
+        schema:
+          type: integer
+          minimum: 10
+          maximum: 50
+          multipleOf: 15
+          exclusiveMaximum: True
 
     get:
       operationId: "getAllStatisticsbyUserID"

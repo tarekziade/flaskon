@@ -125,6 +125,12 @@ paths:
           type: string
           maximum: 12
           minimum: 5
+      - in: query
+        name: q
+        schema:
+          type: string
+          maximum: 12
+          minimum: 5
     get:
       operationId: "getAllStatisticsbyUserID"
       description: "By accessing this page and providing an existing user ID, you retrieve a set of 6 arrays about the temporal statistics of your runs for the following attributes, respectively: 'distance', 'average speed', 'average heartrate'. 'total elevation gain', 'elapsed time' and 'run names'"

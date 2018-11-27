@@ -1,4 +1,4 @@
-Flakon
+Flakon [![Build Status](https://travis-ci.org/MFranceschi6/flakon.svg?branch=master)](https://travis-ci.org/MFranceschi6/flakon)
 ======
 
 **DISCLAIMER** This repository is part of Runnerly, an application made for

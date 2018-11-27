@@ -1,0 +1,181 @@
+openapi: 3.0.0
+info:
+  title: "Beep Beep Statistics Webservice"
+  description: "This is a statistics web server for the Beep Beep application for retrieving statistics about your runs in a visual graphical format. For more information, visit the Github repository: https://github.com/MFranceschi6/BeepBeep-statistics"
+  license:
+    name: APLv2
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: "0.1.0"
+  termsOfService: "https://github.com/MFranceschi6/BeepBeep-statistics"
+
+servers:
+  - url: 0.0.0.0:5001
+components:
+  schemas:
+  
+    NumericalArray:
+      type: array
+      items:
+        type: number
+      minItems: 0
+
+    StringsArray:
+      type: array
+      items:
+        type: string
+      minItems: 0
+
+
+
+
+    RunNamesArray:
+      type: array
+      $ref: '#/components/schemas/StringsArray'
+
+    RunIDsArray:
+      type: array
+      $ref: '#/components/schemas/NumericalArray'
+
+    DistanceArray:
+      type: array
+      $ref: '#/components/schemas/NumericalArray'
+    
+    AverageSpeedArray:
+      type: array
+      $ref: '#/components/schemas/NumericalArray'
+    
+    AverageHeartRateArray:
+      type: array
+      $ref: '#/components/schemas/NumericalArray'
+      
+    ElevationGainArray:
+      type: array
+      $ref: '#/components/schemas/NumericalArray'
+      
+    ElapsedTimeArray:
+      type: array
+      $ref: '#/components/schemas/NumericalArray'
+
+    AllNumericalArrays:
+      allOf:
+      - type: object
+        properties:
+          distance_array:
+            type: object
+            $ref: '#/components/schemas/DistanceArray'
+          average_speed_array:
+            type: object
+            $ref: '#/components/schemas/AverageSpeedArray'
+          average_heart_rate_array:
+            type: object
+            $ref: '#/components/schemas/AverageHeartRateArray'
+          elevation_gain_array:
+            type: object
+            $ref: '#/components/schemas/ElevationGainArray'
+          elapsed_time_array:
+            type: object
+            $ref: '#/components/schemas/ElapsedTimeArray'
+          run_names_array:
+            type: object
+            $ref: '#/components/schemas/RunNamesArray'
+          run_ids_array:
+            type: object
+            $ref: '#/components/schemas/RunIDsArray'
+
+
+            
+      
+    OneNumericalArray:
+      oneOf:
+      - type: object
+        properties:
+          distance_array:
+            type: object
+            $ref: '#/components/schemas/DistanceArray'
+          average_speed_array:
+            type: object
+            $ref: '#/components/schemas/AverageSpeedArray'
+          average_heart_rate_array:
+            type: object
+            $ref: '#/components/schemas/AverageHeartRateArray'
+          elevation_gain_array:
+            type: object
+            $ref: '#/components/schemas/ElevationGainArray'
+          elapsed_time_array:
+            type: object
+            $ref: '#/components/schemas/ElapsedTimeArray'
+      allOf:
+      - type: object
+      properties:
+           run_names_array:
+            type: object
+            $ref: '#/components/schemas/RunNamesArray'
+           run_ids_array:
+            type: object
+            $ref: '#/components/schemas/RunIDsArray'
+      
+paths:
+  /users/{user_id}/statistics/:
+    parameters:
+      - in: path
+        name: user_id
+        description: "The id of the user whose statistics you want to access"
+        required: true
+        schema:
+          type: integer
+          minimum: 10
+          maximum: 50
+          multipleOf: 15.5
+          exclusiveMaximum: true
+
+    get:
+      operationId: "getAllStatisticsbyUserID"
+      description: "By accessing this page and providing an existing user ID, you retrieve a set of 6 arrays about the temporal statistics of your runs for the following attributes, respectively: 'distance', 'average speed', 'average heartrate'. 'total elevation gain', 'elapsed time' and 'run names'"
+      responses:
+        '200':
+          description: "All runs' statistics for the user whose ID was provided"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllNumericalArrays'
+        '400':
+          description: "Invalid user ID supplied"
+        '404':
+          description: "User not found for the user ID supplied. "
+        '503':
+          description: "The 'dataservice' microservice on which this application depends on is not available. Please, try again later"
+      security:
+      - api_key: []
+      
+  /users/{user_id}/statistics/{statistics_name}/:
+    parameters:
+      - in: path
+        name: user_id
+        description: "The id of the user whose statistics you want to access"
+        required: true
+        schema:
+          type: integer
+      - in: path
+        name: statistics_name
+        description: "Based on the statistics name passed, an array containing the run names corresponding to the statistics name supplied is returned. 'distances' = distance array; 'average_speeds' = average speed array; 'average_heart_rates' = average heartrate array ; 'elevation_gains' = total elevation gain array; 'elapsed_times' = elapsed time array."
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: "getSingleStatisticsbyUserID"
+      description: "By accessing this page and providing an existing user ID, you retrieve a set of 7 arrays about the temporal statistics of your runs for the following attributes, respectively: 'distance', 'average speed', 'average heartrate'. 'total elevation gain', 'elapsed time', as well as the run names and the run ids. "
+      responses:
+        '200':
+          description: "Runs' statistics of one single statistics type for the user whose ID was provided"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OneNumericalArray'
+        '400':
+          description: "Invalid user ID supplied or invalid statistics ID supplied."
+        '404':
+          description: "User not found for the user ID supplied."
+        '503':
+          description: "The 'dataservice' microservice on which this application depends on is not available. Please, try again later"
+      security:
+      - api_key: []

@@ -1,6 +1,0 @@
-{
-  "flakon/tests/testflakon.py::test_create_app": true,
-  "flakon/tests/testflakon.py::test_empty_docs": true,
-  "flakon/tests/testflakon.py::test_yams_minimum": true,
-  "flakon/tests/testflakon.py::test_yams_minimum_maximum": true
-}

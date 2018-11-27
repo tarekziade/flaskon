@@ -49,7 +49,7 @@ class ArgumentError(BaseException):
         self.actualtype = actualtype
         self.value = value
 
-
+# to test
 def check_type(name, typee, formatt, value, minn=None, escl_min=False, maxx=None, escl_max=False, mul=None):
     if typee == 'number':
         value = float(value)
@@ -205,7 +205,7 @@ class SwaggerBlueprint(JsonBlueprint):
         options.pop('operation_id')
         return super(SwaggerBlueprint, self).add_url_rule(rule, endpoint,
                                                           view_func, **options)
-
+    # to test
     @staticmethod
     def check_args(args, op):
         listt = []

@@ -1,4 +1,4 @@
-Flakon [![Build Status](https://travis-ci.org/MFranceschi6/flakon.svg?branch=master)](https://travis-ci.org/MFranceschi6/flakon)
+Flakon [![Build Status](https://travis-ci.org/MFranceschi6/flakon.svg?branch=master)](https://travis-ci.org/MFranceschi6/flakon) [![Coverage Status](https://coveralls.io/repos/github/MFranceschi6/flakon/badge.svg?branch=master)](https://coveralls.io/github/MFranceschi6/flakon?branch=master)
 ======
 
 **DISCLAIMER** This repository is part of Runnerly, an application made for

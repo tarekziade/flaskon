@@ -363,7 +363,7 @@ class SwaggerBlueprint(JsonBlueprint):
         listt = []
         nice_heders = {}
         for header in headers:
-            nice_heders[header[0]] = header[1:]
+            nice_heders[header[0]] = header[1]
         if 'parameters' in op:
             op = op['parameters']
             for par in op:

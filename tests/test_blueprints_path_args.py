@@ -48,6 +48,22 @@ def test_path_yaml_int_minimum_exclusive():
         pytest.fail("Unexpected argument error on the integer minimum path. test. ")
 
 
+def test_header_yaml_int_minimum_exclusive():
+    HERE = os.path.dirname(__file__)
+    YML = os.path.join(HERE, './', 'static', 'api_int_min_test_header.yaml')
+    api = SwaggerBlueprint('API', __name__, swagger_spec=YML)
+
+    #with pytest.raises(ArgumentError):
+    api.check_header(headers=[["X-Request-ID", "20"], ["X-Request-ID", "20"]], op=api.ops["getAllStatisticsbyUserID"])
+
+    #api.check_header(headers={"h": 80}, op=api.ops["getAllStatisticsbyUserID"])
+    #except ArgumentError:
+     #   pytest.fail("Unexpected argument error on the integer minimum header test. ")
+
+
+
+
+
 #Test if checks on the minimum on integers work for args too
 def test_args_int_minimum_exclusive():
     HERE = os.path.dirname(__file__)
@@ -663,6 +679,9 @@ def test_args_non_existing_parameter():
 
     with pytest.raises(ArgumentError):
         api.check_args(args={"d": "0"}, op=api.ops["getAllStatisticsbyUserID"])
+
+
+
 
 
 

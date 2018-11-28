@@ -122,9 +122,19 @@ paths:
         description: "The id of the user whose statistics you want to access"
         required: true
         schema:
-          type: number
-          minimum: 50
-          exclusiveMinimum: True
+          type: string
+          format: date
+      - in: query
+        name: q
+        schema:
+          type: string
+          format: date
+      - in: header
+        name: X-Request-ID
+        schema:
+          type: string
+          format: date
+        required: true
     get:
       operationId: "getAllStatisticsbyUserID"
       description: "By accessing this page and providing an existing user ID, you retrieve a set of 6 arrays about the temporal statistics of your runs for the following attributes, respectively: 'distance', 'average speed', 'average heartrate'. 'total elevation gain', 'elapsed time' and 'run names'"

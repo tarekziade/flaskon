@@ -122,15 +122,27 @@ paths:
         description: "The id of the user whose statistics you want to access"
         required: true
         schema:
-          type: boolean
+          type: integer
+          minimum: 10
+          maximum: 50
+          multipleOf: 15
+          exclusiveMaximum: true
       - in: query
         name: q
         schema:
-          type: boolean
+          type: integer
+          minimum: 10
+          maximum: 50
+          multipleOf: 15
+          exclusiveMaximum: True
       - in: header
         name: X-Request-ID
         schema:
-          type: boolean
+          type: integer
+          minimum: 10
+          maximum: 50
+          multipleOf: 15
+          exclusiveMaximum: True
         required: true
     get:
       operationId: "getAllStatisticsbyUserID"

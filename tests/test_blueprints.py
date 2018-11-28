@@ -74,6 +74,26 @@ def test_args_int_minimum_exclusive():
         pytest.fail("Unexpected argument error on the integer minimum arg. test. ")
 
 
+def test_header_yaml_int_minimum_exclusive():
+    HERE = os.path.dirname(__file__)
+    YML = os.path.join(HERE, './', 'static', 'api_int_min_test_header.yaml')
+    api = SwaggerBlueprint('API', __name__, swagger_spec=YML)
+
+    #with pytest.raises(ArgumentError):
+    with pytest.raises(ArgumentError):
+        api.check_header(headers=[("X-Request-ID", 20)], op=api.ops["getAllStatisticsbyUserID"])
+
+    # exclusive minimum
+    with pytest.raises(ArgumentError):
+        api.check_header(headers=[("X-Request-ID" , 50)], op=api.ops["getAllStatisticsbyUserID"])
+
+    try:
+        api.check_header(headers=[("X-Request-ID" , 70)], op=api.ops["getAllStatisticsbyUserID"])
+    except ArgumentError:
+        pytest.fail("Unexpected argument error on the integer minimum arg. test. ")
+
+
+
 #Test if checks on the maximum on integers work
 def test_path_yaml_int_maximum_exclusive():
     HERE = os.path.dirname(__file__)
@@ -120,6 +140,29 @@ def test_args_yaml_int_maximum_exclusive():
     except ArgumentError:
         pytest.fail("Unexpected argument error on the integer maximum args test. ")
 
+def test_header_yaml_int_maximum_exclusive():
+    HERE = os.path.dirname(__file__)
+    YML = os.path.join(HERE, './', 'static', 'api_int_max_test_header.yaml')
+    api = SwaggerBlueprint('API', __name__, swagger_spec=YML)
+
+    # we have fixed x < 50 (exclusive maximum 50)
+
+    # too high number passed.
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", 1000)}, op=api.ops["getAllStatisticsbyUserID"])
+
+    # exclusive maximum passed, shouldn't be allowed (as we check for x < 50)
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", 50)}, op=api.ops["getAllStatisticsbyUserID"])
+
+    # pass a valid value
+    # x < 50 should finally be allowed
+    try:
+        api.check_header(headers={("X-Request-ID", 29)}, op=api.ops["getAllStatisticsbyUserID"])
+    except ArgumentError:
+        pytest.fail("Unexpected argument error on the integer maximum header test. ")
+
+
 
 #Test if checks on the maximum of numbers(floats) work
 def test_path_yaml_number_minimum_exclusive():
@@ -142,6 +185,7 @@ def test_path_yaml_number_minimum_exclusive():
         api.check_path(path="/users/70.123/statistics", op=api.ops["getAllStatisticsbyUserID"])
     except ArgumentError:
         pytest.fail("Unexpected argument error on the number minimum path test.")
+
 
 
 #Test if checks on the maximum of numbers(floats) work
@@ -170,6 +214,32 @@ def test_args_yaml_number_minimum_exclusive():
     except ArgumentError:
         pytest.fail("Unexpected argument error on the number minimum args test.")
 
+def test_header_yaml_number_minimum_exclusive():
+    HERE = os.path.dirname(__file__)
+    YML = os.path.join(HERE, './', 'static', 'api_num_min_test_header.yaml')
+    api = SwaggerBlueprint('API', __name__, swagger_spec=YML)
+
+    #we have fixed x > 50.0
+
+    #test if passing wrong parameter type
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", "testwrongtype")}, op=api.ops["getAllStatisticsbyUserID"])
+
+    #too low number passed.
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", 5.003)}, op=api.ops["getAllStatisticsbyUserID"])
+
+
+    #check if the exclusive minimum also raises an error
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", 50.000)}, op=api.ops["getAllStatisticsbyUserID"])
+
+
+    #pass a valid value x >= 50
+    try:
+        api.check_header(headers={("X-Request-ID",70.123)}, op=api.ops["getAllStatisticsbyUserID"])
+    except ArgumentError:
+        pytest.fail("Unexpected argument error on the number minimum args test.")
 
 
 #Test if checks on the maximum of number (floats) work
@@ -219,6 +289,32 @@ def test_args_yaml_num_maximum_exclusive():
     #x < 50.0 should finally be allowed
     try:
         api.check_args(args={"q": 29.41}, op=api.ops["getAllStatisticsbyUserID"])
+    except ArgumentError:
+        pytest.fail("Unexpected argument error on the integer maximum args test. ")
+
+def test_header_yaml_num_maximum_exclusive():
+    HERE = os.path.dirname(__file__)
+    YML = os.path.join(HERE, './', 'static', 'api_num_max_test_header.yaml')
+    api = SwaggerBlueprint('API', __name__, swagger_spec=YML)
+
+    #we have fixed x < 50.0 (exclusive maximum 50)
+
+    #test if passing parameters of the wrong type
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", "myteststring")}, op=api.ops["getAllStatisticsbyUserID"])
+
+    #too high number passed.
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", 1000.213)}, op=api.ops["getAllStatisticsbyUserID"])
+
+    #exclusive maximum passed, shouldn't be allowed (as we check for x < 50)
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", 50.0)}, op=api.ops["getAllStatisticsbyUserID"])
+
+    #pass a valid value
+    #x < 50.0 should finally be allowed
+    try:
+        api.check_header(headers={("X-Request-ID", 29.41)}, op=api.ops["getAllStatisticsbyUserID"])
     except ArgumentError:
         pytest.fail("Unexpected argument error on the integer maximum args test. ")
 
@@ -317,6 +413,37 @@ def test_args_yaml_max_min_int_multiple():
         api.check_args(args={"q": 1}, op=api.ops["getAllStatisticsbyUserID"])
 
 
+def test_header_yaml_max_min_int_multiple():
+    HERE = os.path.dirname(__file__)
+    YML = os.path.join(HERE, './', 'static', 'api_multiple_int_min_max_test_header.yaml')
+    api = SwaggerBlueprint('API', __name__, swagger_spec=YML)
+
+    #check if passing a number in the range [10, 50], yet not a valid multiple of 15
+
+    #invalid multiple passed, yet in the range
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", 43)}, op=api.ops["getAllStatisticsbyUserID"])
+
+
+    #invalid multiple passed, but out of the range
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", 63)}, op=api.ops["getAllStatisticsbyUserID"])
+
+    #valid multiple integer passed and in the range [10, 50]
+    try:
+        api.check_header(headers={("X-Request-ID", 30)}, op=api.ops["getAllStatisticsbyUserID"])
+    except ArgumentError:
+        pytest.fail("Unexpected argument error on max-min multiple for integer header test. ")
+
+    #check if a too high integer passed
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", 1000)}, op=api.ops["getAllStatisticsbyUserID"])
+
+    #check if a too low integer passed
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", 1)}, op=api.ops["getAllStatisticsbyUserID"])
+
+
 
 #Test if checks on multipleOf do indeed work for number (float)
 def test_path_yaml_max_min_num_multiple():
@@ -366,7 +493,7 @@ def test_args_yaml_max_min_num_multiple():
     try:
         api.check_args(args={"q": 31}, op=api.ops["getAllStatisticsbyUserID"])
     except ArgumentError:
-        pytest.fail("Unexpected argument error on max-min multiple for number path test")
+        pytest.fail("Unexpected argument error on max-min multiple for number args test")
 
     #check if a too high number passed
     with pytest.raises(ArgumentError):
@@ -376,6 +503,33 @@ def test_args_yaml_max_min_num_multiple():
     with pytest.raises(ArgumentError):
         api.check_args(args={"q": 0.34}, op=api.ops["getAllStatisticsbyUserID"])
 
+def test_header_yaml_max_min_num_multiple():
+    HERE = os.path.dirname(__file__)
+    YML = os.path.join(HERE, './', 'static', 'api_multiple_num_min_max_test_header.yaml')
+    api = SwaggerBlueprint('API', __name__, swagger_spec=YML)
+
+    #check if passing a number in the range [10, 50], yet not a valid multiple of 15.5
+    # invalid multiple passed, yet in the range
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", 44.12)}, op=api.ops["getAllStatisticsbyUserID"])
+
+    # invalid multiple passed, but out of the range
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", 63.12)}, op=api.ops["getAllStatisticsbyUserID"])
+
+    #valid multiple of 15.5 passed
+    try:
+        api.check_header(headers={("X-Request-ID", 31)}, op=api.ops["getAllStatisticsbyUserID"])
+    except ArgumentError:
+        pytest.fail("Unexpected argument error on max-min multiple for number header test")
+
+    #check if a too high number passed
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", 11020.12)}, op=api.ops["getAllStatisticsbyUserID"])
+
+    #check if a too low number passed
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", 0.34)}, op=api.ops["getAllStatisticsbyUserID"])
 
 
 
@@ -423,6 +577,31 @@ def test_args_yaml_min_max_string_length():
         api.check_args(args={"q": "daniele"}, op=api.ops["getAllStatisticsbyUserID"])
     except ArgumentError:
         pytest.fail("Unexpected argument error on the min max string length args test. ")
+
+def test_header_yaml_min_max_string_length():
+    HERE = os.path.dirname(__file__)
+    YML = os.path.join(HERE, './', 'static', 'api_min_max_string_header.yaml')
+    api = SwaggerBlueprint('API', __name__, swagger_spec=YML)
+
+    #boundaries set for string are [5, 12]
+
+    #check if a too small string yields an error
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", "abc")}, op=api.ops["getAllStatisticsbyUserID"])
+
+
+    #check if a too long string also yields an error
+    with pytest.raises(ArgumentError):
+
+        api.check_header(headers={("X-Request-ID", "supercalifragilistico")}, op=api.ops["getAllStatisticsbyUserID"])
+    #now check if a string with length between 5 and 12 is fine
+    try:
+        api.check_header(headers={("X-Request-ID", "daniele")}, op=api.ops["getAllStatisticsbyUserID"])
+
+    except ArgumentError:
+        pytest.fail("Unexpected argument error on the min max string length header test. ")
+
+
 
 #Test if a date with valid format is indeed accepted
 def test_path_yaml_valid_date_format():
@@ -494,6 +673,43 @@ def test_args_yaml_valid_date_format():
     except ArgumentError:
         pytest.fail("Unexpected argument error in the valid date args test. ")
 
+def test_header_yaml_valid_date_format():
+    HERE = os.path.dirname(__file__)
+    YML = os.path.join(HERE, './', 'static', 'api_date_test_header.yaml')
+    api = SwaggerBlueprint('API', __name__, swagger_spec=YML)
+
+    #expected date: Y-%m-%d
+
+    #passing a normal string as date should raise an error
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", "fakeDate")}, op=api.ops["getAllStatisticsbyUserID"])
+
+    #passing a date without the proper "-" ticks would raise an error
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", "2018_10_10")}, op=api.ops["getAllStatisticsbyUserID"])
+
+
+    #a valid date and time shouldn't be accepted as "date"
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", "2018-10-10T21:20:10Z")}, op=api.ops["getAllStatisticsbyUserID"])
+
+
+    #a date with an invalid month shouldn't be accepted as date
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", "2018-13-10")}, op=api.ops["getAllStatisticsbyUserID"])
+
+
+    #a date with an invalid day shouldn't be accepted as date either
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", "2018-07-32")}, op=api.ops["getAllStatisticsbyUserID"])
+
+
+    # a valid date should finally be accepted as date
+    try:
+        api.check_header(headers={("X-Request-ID", "2018-10-10")}, op=api.ops["getAllStatisticsbyUserID"])
+    except ArgumentError:
+        pytest.fail("Unexpected argument error in the valid date args test. ")
+
 
 #Test if a date-time timestamp is accepted
 def test_path_yaml_valid_date_time_format():
@@ -528,6 +744,8 @@ def test_path_yaml_valid_date_time_format():
         api.check_path(path="/users/2017-07-21T12:32:99Z/statistics", op=api.ops["getAllStatisticsbyUserID"])
         #we already tested the date, so we can assume the date works fine
 
+
+
 def test_args_yaml_valid_date_time_format():
     HERE = os.path.dirname(__file__)
     YML = os.path.join(HERE, './', 'static', 'api_date_time_test.yaml')
@@ -548,8 +766,6 @@ def test_args_yaml_valid_date_time_format():
     with pytest.raises(ArgumentError):
         api.check_args(args={"q": "2017-07-21 17:32:28"}, op=api.ops["getAllStatisticsbyUserID"])
 
-        api.check_path(path="/users/2017-07-21 17:32:28/statistics", op=api.ops["getAllStatisticsbyUserID"])
-
     #let's pass an invalid hour
     with pytest.raises(ArgumentError):
         api.check_args(args={"q": "2017-07-21T25:32:28Z"}, op=api.ops["getAllStatisticsbyUserID"])
@@ -561,6 +777,40 @@ def test_args_yaml_valid_date_time_format():
     # invalid seconds
     with pytest.raises(ArgumentError):
         api.check_args(args={"q": "2017-07-21T12:32:99Z"}, op=api.ops["getAllStatisticsbyUserID"])
+        #we already tested the date, so we can assume the date works fine
+
+
+def test_header_yaml_valid_date_time_format():
+    HERE = os.path.dirname(__file__)
+    YML = os.path.join(HERE, './', 'static', 'api_date_time_test_header.yaml')
+    api = SwaggerBlueprint('API', __name__, swagger_spec=YML)
+
+    #let's check if a valid date-time is accepted
+    try:
+        api.check_header(headers={("X-Request-ID", "2017-07-21T17:32:28Z")}, op=api.ops["getAllStatisticsbyUserID"])
+    except ArgumentError:
+        pytest.fail("Unexpected argument error on date time test. ")
+
+    #passing a normal string as date.time should raise an error
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", "statistics")}, op=api.ops["getAllStatisticsbyUserID"])
+
+    #let's pass the date-time in an invalid format:
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", "2017-07-21 17:32:28")}, op=api.ops["getAllStatisticsbyUserID"])
+
+    #let's pass an invalid hour
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", "2017-07-21T25:32:28Z")}, op=api.ops["getAllStatisticsbyUserID"])
+
+    #invalid minutes
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", "2017-07-21T12:78:28Z")}, op=api.ops["getAllStatisticsbyUserID"])
+
+    # invalid seconds
+    with pytest.raises(ArgumentError):
+        api.check_header(headers={("X-Request-ID", "2017-07-21T12:32:99Z")}, op=api.ops["getAllStatisticsbyUserID"])
+
         #we already tested the date, so we can assume the date works fine
 
 #test whether a string is properly parsed as a boolean
@@ -606,6 +856,7 @@ def test_path_yaml_boolean():
         api.check_path(path="/users/null/statistics", op=api.ops["getAllStatisticsbyUserID"])
     except ArgumentError:
         pytest.fail("Unexpected argument error in the valid boolean path test 6. ")
+
 
 
 #Test boolean for args (i.e: not supported)
@@ -654,8 +905,55 @@ def test_args_yaml_boolean():
 
 
 
+#Test boolean for args (i.e: not supported)
+def test_header_yaml_boolean():
+    HERE = os.path.dirname(__file__)
+    YML = os.path.join(HERE, './', 'static', 'api_boolean_test_header.yaml')
+    api = SwaggerBlueprint('API', __name__, swagger_spec=YML)
 
-def test_args_non_existing_parameter():
+    # only accepted values are true and false
+
+    # 0 seems to be recognized as a boolean false
+    try:
+        api.check_header(headers={("X-Request-ID", "0")}, op=api.ops["getAllStatisticsbyUserID"])
+    except ArgumentError:
+        pytest.fail("Unexpected argument error in the valid date args test 1. ")
+
+    # and 1 as a boolean true
+    try:
+        api.check_header(headers={("X-Request-ID", "1")}, op=api.ops["getAllStatisticsbyUserID"])
+    except ArgumentError:
+        pytest.fail("Unexpected argument error in the valid date args test 2.")
+
+    # true, valid value
+    try:
+        api.check_header(headers={("X-Request-ID", "true")}, op=api.ops["getAllStatisticsbyUserID"])
+    except ArgumentError:
+        pytest.fail("Unexpected argument error in the valid date args test 3. ")
+
+    # false, valid value
+    try:
+        api.check_header(headers={("X-Request-ID", "false")}, op=api.ops["getAllStatisticsbyUserID"])
+    except ArgumentError:
+        pytest.fail("Unexpected argument error in the valid date args test 4.")
+
+    # boolean seems to be kinda broken. it should yield an error in case no valid boolean is passed, yet it doesn't.
+    # a random string should yield an error, but it doesn't.
+    try:
+        api.check_header(headers={("X-Request-ID", "true")}, op=api.ops["getAllStatisticsbyUserID"])
+
+    except ArgumentError:
+        pytest.fail("Unexpected argument error in the valid date args test 5.")
+
+    try:
+        api.check_header(headers={("X-Request-ID", "null")}, op=api.ops["getAllStatisticsbyUserID"])
+
+    except ArgumentError:
+        pytest.fail("Unexpected argument error in the valid boolean args test 6. ")
+
+
+
+def test_args_non_existing_parameters():
     HERE = os.path.dirname(__file__)
     YML = os.path.join(HERE, './', 'static', 'api_boolean_test.yaml')
     api = SwaggerBlueprint('API', __name__, swagger_spec=YML)
@@ -668,21 +966,8 @@ def test_args_non_existing_parameter():
         api.check_args(args={"d": "0"}, op=api.ops["getAllStatisticsbyUserID"])
 
 
+
 #Test header - currently not functioning
-"""
-def test_header_yaml_int_minimum_exclusive():
-    HERE = os.path.dirname(__file__)
-    YML = os.path.join(HERE, './', 'static', 'api_int_min_test_header.yaml')
-    api = SwaggerBlueprint('API', __name__, swagger_spec=YML)
-
-    #with pytest.raises(ArgumentError):
-    api.check_header(headers=[["X-Request-ID", 20], ["X-Request-ID", 20]], op=api.ops["getAllStatisticsbyUserID"])
-
-    #api.check_header(headers={"h": 80}, op=api.ops["getAllStatisticsbyUserID"])
-    #except ArgumentError:
-     #   pytest.fail("Unexpected argument error on the integer minimum header test. ")
-
-"""
 
 
 
@@ -722,9 +1007,6 @@ def test_return_code():
         api.check_return(res=resp503, op=api.ops["getAllStatisticsbyUserID"])
     except ValueError:
         pytest.fail("Unexpected response error on test return code 503.")
-
-
-
 
 
 

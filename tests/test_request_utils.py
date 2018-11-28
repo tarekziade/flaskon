@@ -22,7 +22,6 @@ def test_statistics_endpoint():
     raise_exception_if_invalid_obj_returned(endpoint, "statistics")
 
 
-
 def test_objectives_endpoint():
     # pass an invalid user ID
     with pytest.raises(Exception):

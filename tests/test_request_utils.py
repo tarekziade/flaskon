@@ -116,27 +116,115 @@ def test_post_request():
 
     #now test if a valid request is being sent
     try:
-        get_result = post_request(url="http://test.com")
-        raise_exception_if_invalid_obj_returned(get_result, "Get Request")
+        post_result = post_request(url="http://test.com")
+        raise_exception_if_invalid_obj_returned(post_result, "Post Request")
     except:
         raise Exception("Unexpected exception in post request performed")
 
 
 
 def test_put_request():
-    #test if an invalid get request is being sent
+
+    #invalid url
     with pytest.raises(Exception):
         put_request(url=None)
 
-    #request with valid body
+    #valid body and valid url
     try:
-        get_result = post_request(url="http://test.com")
-        raise_exception_if_invalid_obj_returned(get_result, "Get Request")
+        put_result = put_request(url="http://test.com")
+        raise_exception_if_invalid_obj_returned(put_result, "Put Request")
     except:
-        raise Exception("Unexpected exception in post request performed")
+        raise Exception("Unexpected exception in put request performed 1")
+
+    #invalid body. should still pass.
+    try:
+        put_result = put_request(url="http://test.com", body=None)
+        raise_exception_if_invalid_obj_returned(put_result, "Put Request 2")
+    except:
+        raise Exception("Unexpected exception in get request performed")
 
 
 
+def test_delete_request():
+
+    #invalid URL passed to delete
+    with pytest.raises(Exception):
+        delete_request(url=None)
+
+    #valid URL
+    try:
+        delete_result = delete_request(url="http://test.com")
+        raise_exception_if_invalid_obj_returned(delete_result, "Delete Request")
+    except:
+        raise Exception("Unexpected exception in delete request performed")
+
+
+
+
+def test_get_request_retry():
+
+    #test if an invalid get request is being sent
+    with pytest.raises(Exception):
+        get_request(url=None)
+
+    #now test if a valid request is being sent
+    try:
+        get_result = get_request_retry(url="http://test.com")
+        raise_exception_if_invalid_obj_returned(get_result, "Get Request retry")
+    except:
+        raise Exception("Unexpected exception in get request performed retry")
+
+
+
+def test_post_request_retry():
+
+    #test if an invalid get request is being sent
+    with pytest.raises(Exception):
+        post_request_retry(url=None)
+
+    #now test if a valid request is being sent
+    try:
+        post_result = post_request_retry(url="http://test.com")
+        raise_exception_if_invalid_obj_returned(post_result, "Post Request retry")
+    except:
+        raise Exception("Unexpected exception in post request performed retry")
+
+
+
+def test_put_request_retry():
+
+    #invalid url
+    with pytest.raises(Exception):
+        put_request(url=None)
+
+    #valid body and valid url
+    try:
+        put_result = put_request_retry(url="http://test.com")
+        raise_exception_if_invalid_obj_returned(put_result, "Put Request retry")
+    except:
+        raise Exception("Unexpected exception in put request performed 1 retry")
+
+    #invalid body. should still pass.
+    try:
+        put_result = put_request_retry(url="http://test.com", body=None)
+        raise_exception_if_invalid_obj_returned(put_result, "Put Request 2")
+    except:
+        raise Exception("Unexpected exception in get request performed retry")
+
+
+
+def test_delete_request_retry():
+
+    #invalid URL passed to delete
+    with pytest.raises(Exception):
+        delete_request_retry(url=None)
+
+    #valid URL
+    try:
+        delete_result = delete_request_retry(url="http://test.com")
+        raise_exception_if_invalid_obj_returned(delete_result, "Delete Request retry")
+    except:
+        raise Exception("Unexpected exception in delete request performed retry")
 
 
 

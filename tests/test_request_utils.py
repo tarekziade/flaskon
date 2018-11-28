@@ -1,14 +1,7 @@
-import pytest
-import os
 from flakon.request_utils import *
 
 
-from unittest import mock
-from flask.json import jsonify
 import pytest
-import os
-from datetime import datetime
-
 
 
 
@@ -209,9 +202,7 @@ def test_put_request_retry():
         put_result = put_request_retry(url="http://test.com", body=None)
         raise_exception_if_invalid_obj_returned(put_result, "Put Request 2")
     except:
-        raise Exception("Unexpected exception in get request performed retry")
-
-
+        raise Exception("Unexpected exception in get request performed 2 retry")
 
 def test_delete_request_retry():
 
